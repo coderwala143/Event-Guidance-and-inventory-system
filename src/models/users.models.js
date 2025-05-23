@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   fullname: {
     type: String,
     required: true,
-    minLength: [3, "fullname must be atleast 3 character long"] 
+    minLength: [3, "fullname must be atleast 3 character long"],
 
   },
   email: {
@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
   password: { 
     type: String, 
     required: true,
-    minLength: [8, "Password must be atleast 8 character long"] 
+    minLength: [8, "Password must be atleast 8 character long"],
+    // match: /^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,}$/
   },
   phoneNo: {
     type: String,
@@ -29,6 +30,12 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "organizer", "attendee"],
     default: "attendee",
   },
+  invitation: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event"
+    }
+  ]
 });
 
 userSchema.pre("save", async function (next) {

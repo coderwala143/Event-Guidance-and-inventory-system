@@ -4,8 +4,8 @@ const ApiError = require("../utils/ApiError");
 const BlackListedToken = require("../models/isBlackListed.models");
 
 module.exports.protect = async (req, res, next) => {
-  let token = req.headers.cookies || req.headers.authorization?.split(" ")[1];
-  console.log(token)
+  let token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
   if (!token) throw new ApiError(401, "Unauthorized!");
 
   const isBlackListed = await BlackListedToken.findOne({token});
@@ -13,6 +13,7 @@ module.exports.protect = async (req, res, next) => {
   
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
   const user = await User.findById(decoded._id).select("-password");
+
   if (!user) {
     throw new ApiError(401, "User not found");
   }
@@ -26,9 +27,11 @@ module.exports.adminOnly = (req, res, next) => {
   }
   next();
 };
-module.exports.organizerOnly = (req, res, next) => {
-  if (req.user?.role !== "organizer") {
-    throw new ApiError(403, "you are not an organizer")
+
+
+module.exports.adminOrOrganizerOnly = (req, res, next) => {
+  if (req.user.role === 'admin' || req.user.role === 'organizer') {
+    return next();
   }
-  next();
+  return res.status(403).json({ message: 'Access denied' });
 };

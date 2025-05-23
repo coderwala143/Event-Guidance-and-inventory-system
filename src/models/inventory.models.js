@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const inventorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -26,10 +25,10 @@ const inventorySchema = new mongoose.Schema({
     ref: 'Event',
     default: null,
   },
-}, {
-  timestamps: true,
-});
+  
+}, {timestamps: true,});
 
 
 const Inventory = mongoose.models.Inventory || mongoose.model('Inventory', inventorySchema);
+
 module.exports = Inventory

@@ -4,7 +4,8 @@ const ApiError = require("../utils/ApiError.js");
 const asyncHandler = require("../utils/asyncHandler.js");
 const ApiResponse = require("../utils/ApiResponse.js");
 const BlackListedToken = require("../models/isBlackListed.models.js");
-
+const { sendEmail } = require("../utils/nodemailer.js")
+// Tested
 module.exports.register = asyncHandler(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -20,12 +21,13 @@ module.exports.register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ fullname, email, password, phoneNo });
   const token = user.generateAuthToken();
-
+  await sendEmail(fullname, email)
   res
     .status(201)
     .json(new ApiResponse(200, user, "Account Created Successfully!", token));
 });
 
+// Tested
 module.exports.login = asyncHandler(async (req, res) => {
   const errors = validationResult(req);
 
@@ -49,19 +51,25 @@ module.exports.login = asyncHandler(async (req, res) => {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token, {secure: true, domain: "localhost", maxAge: 24 * 60 * 60 * 1000})
+  res.cookie("token", token, {domain: "localhost", maxAge: 24 * 60 * 60 * 1000})
 
   res.status(200).json(new ApiResponse(200, user, "Login Successfully!", token))
 });
 
+// Tested
 module.exports.logout = asyncHandler(async(req, res) => {
+  console.log("token - ",req.cookies.token)
   let token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
-  const user = User.findById(req.user._id);
-
+  const user = await User.findById(req.user._id);
+  console.log(user)
   if(!user){
     throw new ApiError(401, "Unauthorized")
   }
   res.clearCookie("token");
   await BlackListedToken.create({token});
-  res.status(200).json(new ApiResponse(200, user, "Logout Successfully!"))
+  res.status(200).json(new ApiResponse(200, null, "Logout Successfully!"))
+})
+
+module.exports.forgetPassWord = asyncHandler(async(req, res) => {
+
 })
